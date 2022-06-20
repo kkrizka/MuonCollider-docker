@@ -2,12 +2,12 @@ name: Build Docker Images
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
     tags:
       - 'v*'
   pull_request:
     branches:
-      - 'master'
+      - 'main'
 jobs:
 #
 # Build and deploy the docker images
