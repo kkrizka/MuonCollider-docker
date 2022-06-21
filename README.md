@@ -4,7 +4,7 @@ Docker files for Muon Collider software
 ## Building the images
 The incremental images for the framework can be built with the following command:
 ```
-cd CentOS8
+cd AlmaLinux8
 docker build -f Dockerfile-environment -t infnpd/mucoll-environment:devel-almalinux8 .
 docker build -f Dockerfile-ilc-base -t infnpd/mucoll-ilc-base:devel-almalinux8 .
 docker build -f Dockerfile-ilc-framework -t infnpd/mucoll-ilc-framework:devel-almalinux8 .

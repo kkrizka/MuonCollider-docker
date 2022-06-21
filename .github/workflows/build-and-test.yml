@@ -40,8 +40,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          context: ./CentOS8
-          file: ./CentOS8/Dockerfile-environment
+          context: ./AlmaLinux8
+          file: ./AlmaLinux8/Dockerfile-environment
           tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-environment:${{steps.meta.outputs.version}}-almalinux8
       -
         name: Build and Push (mucoll-ilc-base)
@@ -49,8 +49,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          context: ./CentOS8
-          file: ./CentOS8/Dockerfile-ilc-base
+          context: ./AlmaLinux8
+          file: ./AlmaLinux8/Dockerfile-ilc-base
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             REPOSITORY=${{ secrets.DOCKERHUB_REPOSITORY }}
@@ -61,8 +61,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          context: ./CentOS8
-          file: ./CentOS8/Dockerfile-ilc-framework
+          context: ./AlmaLinux8
+          file: ./AlmaLinux8/Dockerfile-ilc-framework
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             REPOSITORY=${{ secrets.DOCKERHUB_REPOSITORY }}
