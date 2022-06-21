@@ -8,7 +8,7 @@ FROM ${REPOSITORY}/mucoll-environment:${VERSION}-almalinux8
 
 RUN cd /opt && git clone https://github.com/kkrizka/MuonCutil.git && \
     git clone https://github.com/MuonColliderSoft/iLCInstall.git && \
-    cd /opt/MuonCutil && git checkout v02-07-MC && \
+    cd /opt/MuonCutil && git checkout v02-06-MC && \
     cd /opt/iLCInstall && git checkout v02-03-01-MC && \
     mkdir releases/development && \
     cp /opt/MuonCutil/releases/development/* releases/development && \
