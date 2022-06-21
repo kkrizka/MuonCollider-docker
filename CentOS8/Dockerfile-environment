@@ -2,7 +2,7 @@
 #  Image: mucoll-environment
 ###############################################################################
 
-FROM centos:centos8
+FROM almalinux:8.6
 
 RUN yum -y install epel-release yum-utils wget && \
     yum-config-manager --set-enabled powertools && \
