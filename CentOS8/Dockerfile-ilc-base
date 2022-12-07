@@ -6,9 +6,9 @@ ARG VERSION=devel
 ARG REPOSITORY=infnpd
 FROM ${REPOSITORY}/mucoll-environment:${VERSION}-centos8stream
 
-RUN cd /opt && git clone https://github.com/MuonColliderSoft/MuonCutil.git && \
+RUN cd /opt && git clone https://github.com/kkrizka/MuonCutil.git && \
     git clone https://github.com/MuonColliderSoft/iLCInstall.git && \
-    cd /opt/MuonCutil && git d54bc67960f252fd75d3f4ed7f745bdb1efeaca7 && \
+    cd /opt/MuonCutil && git checkout v02-08-MC && \
     cd /opt/iLCInstall && git checkout v02-03-01-MC && \
     mkdir releases/development && \
     cp /opt/MuonCutil/releases/development/* releases/development && \
