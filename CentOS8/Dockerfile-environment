@@ -1,6 +1,5 @@
 ###############################################################################
-#  Repository: mucoll-environment
-#  Tag:        1.6-centos8stream
+#  Image: mucoll-environment
 ###############################################################################
 
 FROM cern/c8-base:latest
