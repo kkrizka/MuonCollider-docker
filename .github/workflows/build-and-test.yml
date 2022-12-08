@@ -37,16 +37,16 @@ jobs:
       -
         name: Build and Push (mucoll-environment)
         id: docker_build_mucoll-environment
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           push: true
           context: ./CentOS8
           file: ./CentOS8/Dockerfile-environment
-          tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-environment:${{steps.meta.outputs.version}}-almalinux8
+          tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-environment:${{steps.meta.outputs.version}}-centos8stream
       -
         name: Build and Push (mucoll-ilc-base)
         id: docker_build_mucoll-ilc-base
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           push: true
           context: ./CentOS8
@@ -54,11 +54,11 @@ jobs:
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             REPOSITORY=${{ secrets.DOCKERHUB_REPOSITORY }}
-          tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-base:${{steps.meta.outputs.version}}-almalinux8
+          tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-base:${{steps.meta.outputs.version}}-centos8stream
       -
         name: Build and Push (mucoll-ilc-framework)
         id: docker_build_mucoll-ilc-framework
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           push: true
           context: ./CentOS8
@@ -66,7 +66,7 @@ jobs:
           build-args: |
             VERSION=${{ steps.meta.outputs.version }}
             REPOSITORY=${{ secrets.DOCKERHUB_REPOSITORY }}
-          tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{steps.meta.outputs.version}}-almalinux8,${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{github.sha}}-almalinux8
+          tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{steps.meta.outputs.version}}-centos8stream,${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{github.sha}}-centos8stream
 #
 # Generate test events
   sim:
@@ -88,7 +88,7 @@ jobs:
       - name: Simulate Events
         if: steps.cache-sim.outputs.cache-hit != 'true'
         run: |
-          docker run -v ${PWD}:/var/myrun -w /var/myrun ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{github.sha}}-almalinux8 /bin/bash -c "
+          docker run -v ${PWD}:/var/myrun -w /var/myrun ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{github.sha}}-centos8stream /bin/bash -c "
             source /opt/ilcsoft/muonc/init_ilcsoft.sh &&
             ddsim --steeringFile test/sim_steer_muonGun_MuColl_v1.py
           "
@@ -119,7 +119,7 @@ jobs:
       -
         name: Run ACTSTracking example
         run: |
-          docker run -v ${PWD}:/var/myrun -w /var/myrun ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{github.sha}}-almalinux8 /bin/bash -c "
+          docker run -v ${PWD}:/var/myrun -w /var/myrun ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{github.sha}}-centos8stream /bin/bash -c "
             source /opt/ilcsoft/muonc/init_ilcsoft.sh &&
             Marlin ${{ matrix.steer }} --global.LCIOInputFiles=muonGun_sim_MuColl_v1.slcio
           "
