@@ -1,0 +1,125 @@
+name: Build Docker Images
+on:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'main'
+jobs:
+#
+# Build and deploy the docker images
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Docker Meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-dummy
+      -
+        name: Build and Push (mucoll-environment)
+        id: docker_build_mucoll-environment
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: ./CentOS8
+          file: ./CentOS8/Dockerfile-environment
+          tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-environment:${{steps.meta.outputs.version}}-centos8stream
+      -
+        name: Build and Push (mucoll-ilc-base)
+        id: docker_build_mucoll-ilc-base
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: ./CentOS8
+          file: ./CentOS8/Dockerfile-ilc-base
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            REPOSITORY=${{ secrets.DOCKERHUB_REPOSITORY }}
+          tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-base:${{steps.meta.outputs.version}}-centos8stream
+      -
+        name: Build and Push (mucoll-ilc-framework)
+        id: docker_build_mucoll-ilc-framework
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: ./CentOS8
+          file: ./CentOS8/Dockerfile-ilc-framework
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            REPOSITORY=${{ secrets.DOCKERHUB_REPOSITORY }}
+          tags: ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{steps.meta.outputs.version}}-centos8stream,${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{github.sha}}-centos8stream
+#
+# Generate test events
+  sim:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        id: cache-sim
+        name: Cache Event Simulation
+        uses: actions/cache@v2
+        with:
+          path: ./muonGun_sim_MuColl_v1.slcio
+          key: events-${{ hashFiles('test/sim_steer_muonGun_MuColl_v1.py') }}
+      - name: Simulate Events
+        if: steps.cache-sim.outputs.cache-hit != 'true'
+        run: |
+          docker run -v ${PWD}:/var/myrun -w /var/myrun ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{github.sha}}-centos8stream /bin/bash -c "
+            source /opt/ilcsoft/muonc/init_ilcsoft.sh &&
+            ddsim --steeringFile test/sim_steer_muonGun_MuColl_v1.py
+          "
+#
+# Test ACTS
+  proc:
+    needs: sim
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        steer:
+          - /opt/ilcsoft/muonc/ACTSTracking/v1.1.0/share/ACTSTracking/example/actstruth_steer.xml
+          - /opt/ilcsoft/muonc/ACTSTracking/v1.1.0/share/ACTSTracking/example/actstruthckf_steer.xml
+          - /opt/ilcsoft/muonc/ACTSTracking/v1.1.0/share/ACTSTracking/example/actsseed_steer.xml
+          - /opt/ilcsoft/muonc/ACTSTracking/v1.1.0/share/ACTSTracking/example/actsseedckf_steer.xml
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      -
+        name: Cache Event Simulation
+        uses: actions/cache@v2
+        with:
+          path: ./muonGun_sim_MuColl_v1.slcio
+          key: events-${{ hashFiles('test/sim_steer_muonGun_MuColl_v1.py') }}
+      -
+        name: Run ACTSTracking example
+        run: |
+          docker run -v ${PWD}:/var/myrun -w /var/myrun ${{ secrets.DOCKERHUB_REPOSITORY }}/mucoll-ilc-framework:${{github.sha}}-centos8stream /bin/bash -c "
+            source /opt/ilcsoft/muonc/init_ilcsoft.sh &&
+            Marlin ${{ matrix.steer }} --global.LCIOInputFiles=muonGun_sim_MuColl_v1.slcio
+          "
